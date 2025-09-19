@@ -13,9 +13,9 @@ const app = express();
 // 🔒 Sécurité middlewares
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:3000",
-  credentials: true
+  origin: "*", // ou mets "http://localhost:5173" si tu veux restreindre
 }));
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use("/uploads", express.static("identizone"));
