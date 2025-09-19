@@ -13,8 +13,10 @@ const app = express();
 // 🔒 Sécurité middlewares
 app.use(helmet());
 app.use(cors({
-  origin: "*", // ou mets "http://localhost:5173" si tu veux restreindre
+  origin: "http://localhost:5173", // 👈 ici ton front local
+  credentials: true // 👈 autorise l’envoi des cookies / auth
 }));
+
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
