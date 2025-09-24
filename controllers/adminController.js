@@ -61,6 +61,7 @@ export const getAllAdmins = async (req, res) => {
                 "numero_tel",
                 "adresse",
                 "photo",
+                "camp",
                 "role",
                 "createdAt"
             ],
