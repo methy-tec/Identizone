@@ -2,10 +2,10 @@
 export default (sequelize, DataTypes) => {
     const Admin = sequelize.define("Admin", {
         id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-        username: {type: DataTypes.STRING, allowNull: false, unique:true},
+        username: {type: DataTypes.STRING, allowNull: false},
         password: {type: DataTypes.STRING},
         role: {type: DataTypes.STRING, defaultValue: "admin"},
-        nom_complet: {type: DataTypes.STRING, allowNull: false, unique: true},
+        nom_complet: {type: DataTypes.STRING, allowNull: false},
         lieu_naissance: {type: DataTypes.STRING},
         date_naissance: {type: DataTypes.DATEONLY},
         numero_tel: {type: DataTypes.STRING, allowNull: false,},
