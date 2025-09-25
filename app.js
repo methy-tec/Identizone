@@ -13,7 +13,7 @@ const app = express();
 // 🔒 Sécurité middlewares
 app.use(helmet());
 app.use(cors({
-  origin: "http://localhost:5173", // 👈 ici ton front local
+  origin: "*", // 👈 ici ton front local
   credentials: true // 👈 autorise l’envoi des cookies / auth
 }));
 
