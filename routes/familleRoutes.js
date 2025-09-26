@@ -1,5 +1,5 @@
 import express from "express";
-import { createFamille, updateStatutParent, getFamillesWithParentsDecedes, getFamillesByUser, updateFamille, deleteFamille } from "../controllers/familleController.js";
+import { createFamille, updateStatutParent, getFamillesWithParentsDecedes, getFamillesByUser, updateFamille, deleteFamille, getAllFamilles } from "../controllers/familleController.js";
 import { verifyToken, verifyRole } from "../middlewares/authMiddlewares.js";
 
 const router = express.Router();
@@ -12,6 +12,9 @@ router.get("/parents-decedes", verifyToken, verifyRole("admin", "preadmin"), get
 
 // 📋 Admin ou PréAdmin → voit uniquement les familles qui lui sont liées
 router.get("/mes-familles", verifyToken, getFamillesByUser);
+
+//Super Admin voir tout les famille
+router.get("list", verifyToken, getAllFamilles);
 
 // ✏️ Modifier une famille
 router.put("/:id", verifyToken, updateFamille);
