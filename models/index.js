@@ -49,8 +49,9 @@ Travailleur.belongsTo(Habitat, {foreignKey: "habitatId"});
 Habitat.hasOne(Utilisateur, {foreignKey: "habitatId", onDelete: "CASCADE"});
 Utilisateur.belongsTo(Habitat, {foreignKey: "habitatId"});
 
-Habitat.hasOne(Famille, {foreignKey: "habitatId", onDelete: "CASCADE"});
-Famille.belongsTo(Habitat, {foreignKey: "habitatId"});
+Habitat.hasMany(Famille, { foreignKey: "habitatId", as: "familles", onDelete: "CASCADE" });
+Famille.belongsTo(Habitat, { foreignKey: "habitatId", as: "habitat" });
+
 
 // PreAdmin → Travailleur
 PreAdmin.hasMany(Travailleur, { foreignKey: "preAdminId" });
