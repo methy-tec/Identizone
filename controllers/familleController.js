@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import {Famille, Utilisateur} from "../models/index.js";
+import {Famille, Utilisateur, Habitat} from "../models/index.js";
 
 export const createFamille = async (req, res) => {
   try {
