@@ -14,7 +14,7 @@ router.get("/parents-decedes", verifyToken, verifyRole("admin", "preadmin"), get
 router.get("/mes-familles", verifyToken, getFamillesByUser);
 
 //Super Admin voir tout les famille
-router.get("list", verifyToken, getAllFamilles);
+router.get("/list", verifyToken, getAllFamilles);
 
 // ✏️ Modifier une famille
 router.put("/:id", verifyToken, updateFamille);
