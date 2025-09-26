@@ -197,4 +197,29 @@ export const deleteFamille = async (req, res) => {
   }
 };
 
+/**
+ * 📋 Lister TOUTES les familles (SuperAdmin)
+ */
+export const getAllFamilles = async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== "superadmin") {
+      return res.status(403).json({ message: "Accès refusé ❌" });
+    }
+
+    const familles = await Famille.findAll({
+      include: [
+        { model: Utilisateur, as: "pere", attributes: ["id", "nom", "postnom", "prenom", "statut", "date_deces"] },
+        { model: Utilisateur, as: "mere", attributes: ["id", "nom", "postnom", "prenom", "statut", "date_deces"] },
+      ],
+    });
+
+    res.json(familles);
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la récupération de toutes les familles ❌",
+      error: error.message,
+    });
+  }
+};
+
 
