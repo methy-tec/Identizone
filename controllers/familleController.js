@@ -210,6 +210,7 @@ export const getAllFamilles = async (req, res) => {
       include: [
         { model: Utilisateur, as: "pere", attributes: ["id", "nom", "postnom", "prenom", "statut", "date_deces"] },
         { model: Utilisateur, as: "mere", attributes: ["id", "nom", "postnom", "prenom", "statut", "date_deces"] },
+        { model: Habitat, as: "habitat", attributes: ["id", "nom"] },
       ],
     });
 
