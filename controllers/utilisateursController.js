@@ -1,4 +1,4 @@
-import { Utilisateur, Famille } from "../models/index.js";
+import { Utilisateur,Admin, PreAdmin, Habitat, Famille } from "../models/index.js";
 import moment from "moment";
 
 export const registerUtilisateur = async (req, res) =>{
@@ -136,5 +136,42 @@ export const deleteUtilisateur = async (req, res) => {
     res.json({ message: "✅ Utilisateur supprimé avec succès" });
   } catch (error) {
     res.status(500).json({ message: "❌ Erreur lors de la suppression", error: error.message });
+  }
+};
+// 📋 Récupérer utilisateurs selon rôle
+export const getUtilisateurs = async (req, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ message: "Non autorisé ❌" });
+
+    let whereClause = {};
+
+    if (req.user.role === "superadmin") {
+      // Superadmin → voir tous les utilisateurs
+      whereClause = {};
+    } else if (req.user.role === "admin") {
+      // Admin → voir ses utilisateurs
+      whereClause = { adminId: req.user.id };
+    } else if (req.user.role === "preadmin") {
+      // PréAdmin → utilisateurs liés à son habitat
+      whereClause = { habitatId: req.user.habitatId };
+    } else {
+      return res.status(403).json({ message: "Accès refusé ❌" });
+    }
+
+    const utilisateurs = await Utilisateur.findAll({
+      where: whereClause,
+      include: [
+        { model: Admin, attributes: ["id", "nom_complet"] },
+        { model: PreAdmin, attributes: ["id", "nom_complet"] },
+        { model: Habitat, attributes: ["id", "nom"] },
+        { model: Famille, as: "famille", attributes: ["id", "nom_complet"] },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.json(utilisateurs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erreur lors de la récupération des utilisateurs ❌", error: error.message });
   }
 };
