@@ -40,13 +40,13 @@ Habitat.belongsTo(Admin, {foreignKey: "adminId"});
 Habitat.hasOne(Admin, {foreignKey: "habitatId", onDelete: "CASCADE"});
 Admin.belongsTo(Habitat, {foreignKey: "habitatId"});
 
-Habitat.hasOne(PreAdmin, {foreignKey: "habitatId", onDelete: "CASCADE"});
+Habitat.hasMany(PreAdmin, {foreignKey: "habitatId", onDelete: "CASCADE"});
 PreAdmin.belongsTo(Habitat, {foreignKey: "habitatId"});
 
-Habitat.hasOne(Travailleur, {foreignKey: "habitatId", onDelete: "CASCADE"});
+Habitat.hasMany(Travailleur, {foreignKey: "habitatId", onDelete: "CASCADE"});
 Travailleur.belongsTo(Habitat, {foreignKey: "habitatId"});
 
-Habitat.hasOne(Utilisateur, {foreignKey: "habitatId", onDelete: "CASCADE"});
+Habitat.hasMany(Utilisateur, {foreignKey: "habitatId", onDelete: "CASCADE"});
 Utilisateur.belongsTo(Habitat, {foreignKey: "habitatId"});
 
 Habitat.hasMany(Famille, { foreignKey: "habitatId", as: "familles", onDelete: "CASCADE" });
