@@ -162,7 +162,6 @@ export const getUtilisateurs = async (req, res) => {
       where: whereClause,
       include: [
         { model: Admin, attributes: ["id", "nom_complet"] },
-        { model: PreAdmin, attributes: ["id", "nom_complet"] },
         { model: Habitat, attributes: ["id", "nom"] },
         { model: Famille, as: "famille", attributes: ["id", "nom_complet"] },
       ],
