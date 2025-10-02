@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken';
-import { SuperAdmin} from "../models/index.js";
+import { SuperAdmin, Admin, PreAdmin, Utilisateur, Famille, Habitat } from "../models/index.js";
 
 export const register = async (req, res) => {
     try {
@@ -54,5 +54,29 @@ export const refreshToken = (req, res) => {
     res.json({ accessToken: newAccessToken });
   } catch (err) {
     res.status(403).json({ message: "Refresh token invalide ❌", error: err.message });
+  }
+};
+export const getStatistics = async (req, res) => {
+  try {
+    const superadmins = 1; // ou si tu as une table SuperAdmins, tu mets le count Sequelize
+    const admins = await Admin.count();
+    const preadmins = await PreAdmin.count();
+    const familles = await Famille.count();
+    const utilisateurs = await Utilisateur.count();
+    const travailleurs = await Utilisateur.count({ where: { profession: "travailleur" } }); 
+    const habitats = await Habitat.count();
+
+    res.json({
+      superadmins,
+      admins,
+      preadmins,
+      familles,
+      utilisateurs,
+      travailleurs,
+      habitats
+    });
+  } catch (error) {
+    console.error("Erreur statistiques:", error);
+    res.status(500).json({ message: "Erreur récupération statistiques ❌" });
   }
 };
