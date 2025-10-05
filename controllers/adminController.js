@@ -81,67 +81,52 @@ export const getAllAdmins = async (req, res) => {
 export const updateAdmin = async (req, res) => {
   try {
     const { id } = req.params;
-    const {
-      username,
-      nom_complet,
-      lieu_naissance,
-      date_naissance,
-      numero_tel,
-      adresse,
-      camp, // si l'admin change de camp
-      password
-    } = req.body || {};
+    const { username, nom_complet, date_naissance, password, numero_tel, adresse } = req.body;
 
-    // Chercher l'admin existant
+    // Chercher l'admin
     const admin = await Admin.findByPk(id);
     if (!admin) {
-      return res.status(404).json({ message: "Admin introuvable ❌" });
+      return res.status(404).json({ message: "Admin non trouvé ❌" });
     }
 
-    // Gérer upload de photo
-    let photo = admin.photo;
+    // Si une nouvelle photo a été envoyée
     if (req.file) {
-      photo = req.file.filename;
-    }
-
-    // Gérer changement de mot de passe
-    let hashedPassword = admin.password;
-    if (password) {
-      hashedPassword = await bcrypt.hash(password, 10);
-    }
-
-    // Si le camp change → on retrouve l'habitat
-    let habitatId = admin.habitatId;
-    if (camp) {
-      const habitat = await Habitat.findOne({ where: { nom: camp } });
-      if (!habitat) {
-        return res.status(404).json({ message: "Habitat introuvable ❌" });
+      // Supprimer l’ancienne photo de Cloudinary si elle existe
+      if (admin.photo) {
+        // admin.photo contient normalement le "public_id" de Cloudinary
+        await cloudinary.uploader.destroy(admin.photo);
       }
-      habitatId = habitat.id;
+
+      // Uploader la nouvelle photo sur Cloudinary
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "admins", // dossier Cloudinary
+      });
+
+      // Sauvegarder le public_id (pratique pour suppression plus tard)
+      admin.photo = result.public_id;
     }
 
-    // Mise à jour
-    await admin.update({
-      username: username || admin.username,
-      nom_complet: nom_complet || admin.nom_complet,
-      lieu_naissance: lieu_naissance || admin.lieu_naissance,
-      date_naissance: date_naissance || admin.date_naissance,
-      numero_tel: numero_tel || admin.numero_tel,
-      adresse: adresse || admin.adresse,
-      photo,
-      password: hashedPassword,
-      habitatId
-    });
+    // Mettre à jour les autres champs
+    admin.username = username || admin.username;
+    admin.nom_complet = nom_complet || admin.nom_complet;
+    admin.date_naissance = date_naissance || admin.date_naissance;
+    admin.password = password || admin.password;
+    admin.numero_tel = numero_tel || admin.numero_tel;
+    admin.adresse = adresse || admin.adresse;
 
-    res.status(200).json({ message: "Admin modifié avec succès ✅", admin });
-  } catch (error) {
-    console.error("❌ Erreur lors de la modification de l'admin :", error);
-    res.status(500).json({
-      message: "Erreur serveur lors de la modification de l'admin ❌",
-      error: error.message,
+    await admin.save();
+
+    return res.json({
+      message: "✅ Admin mis à jour avec succès",
+      admin,
+      photoUrl: admin.photo ? cloudinary.url(admin.photo) : null,
     });
+  } catch (error) {
+    console.error("Erreur updateAdmin:", error);
+    return res.status(500).json({ message: "❌ Erreur serveur", error: error.message });
   }
 };
+
 export const getAdminById = async (req, res) => {
   try {
     const { id } = req.params;
