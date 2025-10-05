@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken';
 import moment from "moment";
 import { where } from "sequelize";
+import cloudinary from "../config/cloudinary.js";
 
 export const register = async (req, res) =>{
     try{
