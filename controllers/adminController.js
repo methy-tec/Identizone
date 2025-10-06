@@ -7,42 +7,53 @@ import cloudinary from "../config/cloudinary.js";
 
 export const register = async (req, res) => {
   try {
-    const { username, nom_complet, lieu_naissance, date_naissance, numero_tel, adresse, camp, password } = req.body;
-    
+    const { username, nom_complet, lieu_naissance, date_naissance, numero_tel, adresse, camp, password, role } = req.body;
+
     if (!username || !password || !nom_complet) {
       return res.status(400).json({ message: "Les champs username, nom complet et password sont obligatoires" });
     }
 
+    // Vérifier si username existe déjà
     const existingAdmin = await Admin.findOne({ where: { username } });
     if (existingAdmin) {
       return res.status(400).json({ message: "Ce username existe déjà" });
     }
 
+    // Hash mot de passe
     const hashedPassword = await bcrypt.hash(password, 10);
-    const isoDate = date_naissance ? moment(date_naissance, "DD/MM/YYYY").format("YYYY-MM-DD") : null;
+
+    // Date formatée (on prend directement ce que renvoie l'input type="date")
+    const isoDate = date_naissance || null;
+
+    // Photo via multer
     const photo = req.file ? req.file.filename : null;
 
+    // Création Admin
     const admin = await Admin.create({
       username,
+      password: hashedPassword,
+      role: role || "admin",
       nom_complet,
       lieu_naissance,
-      camp,
       date_naissance: isoDate,
       numero_tel,
       adresse,
       photo,
-      password: hashedPassword,
+      camp,
     });
 
+    // Création Habitat lié
     const habitat = await Habitat.create({ nom: camp, adminId: admin.id });
     await admin.update({ habitatId: habitat.id });
 
-    res.status(201).json({ message: "Admin et Habitat créés avec succès", admin, habitat });
+    res.status(201).json({ message: "Admin et Habitat créés avec succès ✅", admin, habitat });
+
   } catch (error) {
     console.error("Erreur création admin:", error);
-    res.status(500).json({ message: "Erreur lors de la création de l'admin", error: error.message });
+    res.status(500).json({ message: "Erreur lors de la création de l'admin ❌", error: error.message });
   }
 };
+
 
 export const login = async (req, res) =>{
     try{
