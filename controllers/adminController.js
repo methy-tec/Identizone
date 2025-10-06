@@ -4,31 +4,55 @@ import jwt from 'jsonwebtoken';
 import moment from "moment";
 import { where } from "sequelize";
 
-export const register = async (req, res) =>{
-    try{
-        const {username, nom_complet, lieu_naissance, date_naissance, numero_tel, adresse, camp, password, habitatId} = req.body;
-        const photo = req.file? req.file.filename : null;
+export const register = async (req, res) => {
+  try {
+    const { username, nom_complet, lieu_naissance, date_naissance, numero_tel, adresse, camp, password } = req.body;
+    const photo = req.file ? req.file.filename : null;
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+    // Hash du mot de passe
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-
-        //Conversion de la date au format ISO pour Sequelize
-        const isoDate = moment(date_naissance, "DD/MM/YYYY").format("YYYY-MM-DD");
-
-        // 1 Cree L'admin sans habitatId
-        const admin = await Admin.create({username, nom_complet, lieu_naissance, camp, date_naissance: isoDate, numero_tel, adresse, photo, password: hashedPassword, });
-
-        // 2 Cree automatiquement son Habitat lié
-        const habitat = await Habitat.create({ nom: camp, adminId: admin.id});
-
-        await admin.update({ habitatId: habitat.id});
-
-        res.status(201).json({message: "Admin et Habitat crées avec succes", admin, habitat});
-    }catch(error){
-        res.status(500).json({ message: "Erreur lors de la creation de l'admin", error: error.message,});
+    // Gestion flexible de la date
+    let isoDate = date_naissance;
+    if (date_naissance.includes("/")) {
+      isoDate = moment(date_naissance, "DD/MM/YYYY").format("YYYY-MM-DD");
     }
-};
 
+    // Création de l'admin
+    const admin = await Admin.create({
+      username,
+      nom_complet,
+      lieu_naissance,
+      camp,
+      date_naissance: isoDate,
+      numero_tel,
+      adresse,
+      photo,
+      password: hashedPassword,
+    });
+
+    // Création automatique de l'habitat lié
+    const habitat = await Habitat.create({
+      nom: camp,
+      adminId: admin.id,
+    });
+
+    // Mise à jour admin avec habitatId
+    await admin.update({ habitatId: habitat.id });
+
+    res.status(201).json({
+      message: "Admin et Habitat créés avec succès ✅",
+      admin,
+      habitat,
+    });
+  } catch (error) {
+    console.error("Erreur création admin:", error); // <-- important pour debug Render
+    res.status(500).json({
+      message: "Erreur lors de la création de l'admin ❌",
+      error: error.message,
+    });
+  }
+};
 export const login = async (req, res) =>{
     try{
         const {username, password} = req.body;
