@@ -29,39 +29,50 @@ export const login = async (req, res) =>{
 // ➕ Créer un PreAdmin
 export const createPreAdmin = async (req, res) => {
   try {
+    // Vérification que c'est bien un admin
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "Seul un Admin peut créer un Preadmin ❌" });
+    }
+
+    // Récupérer les champs du formulaire
     const {
       username,
       nom_complet,
       lieu_naissance,
-      date_naissance, // format DD/MM/YYYY
+      date_naissance,
       numero_tel,
       adresse,
       password,
     } = req.body;
 
-    if (!req.user || req.user.role != "admin") {
-      return res.status(400).json({ message: "Seul un Admin peut cree un Preadmin ❌" });
+    if (!username || !nom_complet || !lieu_naissance || !date_naissance || !numero_tel || !adresse || !password) {
+      return res.status(400).json({ message: "Tous les champs obligatoires doivent être remplis ❌" });
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    
 
+    // Hash du mot de passe
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Photo (optionnelle)
     const photo = req.file ? req.file.filename : null;
 
-    // Conversion de la date
-    const isoDate = moment(date_naissance, ["YYYY-MM-DD","DD/MM/YYYY"]).format("YYYY-MM-DD");
+    // Conversion de la date : accepte YYYY-MM-DD ou DD/MM/YYYY
+    const isoDate = moment(date_naissance, ["YYYY-MM-DD", "DD/MM/YYYY"], true);
+    if (!isoDate.isValid()) {
+      return res.status(400).json({ message: "Date de naissance invalide ❌" });
+    }
 
-
+    // Création du PreAdmin
     const preAdmin = await PreAdmin.create({
       username,
       nom_complet,
       lieu_naissance,
-      date_naissance: isoDate,
+      date_naissance: isoDate.format("YYYY-MM-DD"),
       numero_tel,
       adresse,
       password: hashedPassword,
       photo,
       adminId: req.user.id,
-      habitatId: req.user.habitatId
+      habitatId: req.user.habitatId,
     });
 
     res.status(201).json({
@@ -69,7 +80,7 @@ export const createPreAdmin = async (req, res) => {
       preAdmin,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Erreur createPreAdmin:", error);
     res.status(500).json({
       message: "Erreur lors de la création du PreAdmin ❌",
       error: error.message,
