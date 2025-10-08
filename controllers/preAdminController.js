@@ -158,28 +158,49 @@ export const getPreAdminById = async (req, res) => {
 // ✏️ Modifier un PreAdmin
 export const updatePreAdmin = async (req, res) => {
   try {
-    const preAdmin = await PreAdmin.findByPk(req.params.id);
-    if (!preAdmin) return res.status(404).json({ message: "PreAdmin introuvable ❌" });
+    const { id } = req.params;
+    const {
+      username,
+      nom_complet,
+      date_naissance,
+      numero_tel,
+      adresse,
+      password
+    } = req.body;
 
-    const { username, nom_complet, lieu_naissance, date_naissance, numero_tel, adresse } = req.body;
-    const photo = req.file ? req.file.filename : null;
-    const isoDate = date_naissance ? moment(date_naissance, "DD/MM/YYYY").format("YYYY-MM-DD") : preAdmin.date_naissance;
+    const preAdmin = await PreAdmin.findByPk(id);
+    if (!preAdmin) return res.status(404).json({ message: "Pré-admin introuvable ❌" });
+
+    // Conversion de la date
+    const isoDate = moment(date_naissance, "YYYY-MM-DD").format("YYYY-MM-DD");
+    const photo = req.file ? req.file.filename : preAdmin.photo;
+
+    // Hachage du mot de passe si modifié
+    let hashedPassword = preAdmin.password;
+    if (password && password.trim() !== "") {
+      hashedPassword = await bcrypt.hash(password, 10);
+    }
 
     await preAdmin.update({
-      username: username || preAdmin.username,
-      nom_complet: nom_complet || preAdmin.nom_complet,
-      lieu_naissance: lieu_naissance || preAdmin.lieu_naissance,
+      username,
+      nom_complet,
       date_naissance: isoDate,
-      numero_tel: numero_tel || preAdmin.numero_tel,
-      adresse: adresse || preAdmin.adresse,
-      photo: photo || preAdmin.photo,
+      numero_tel,
+      adresse,
+      password: hashedPassword,
+      photo,
     });
 
-    res.json({ message: "PreAdmin modifié avec succès ✅", preAdmin });
+    res.status(200).json({ message: "Pré-admin mis à jour ✅", preAdmin });
   } catch (error) {
-    res.status(500).json({ message: "Erreur lors de la modification du PreAdmin ❌", error: error.message });
+    console.error(error);
+    res.status(500).json({
+      message: "Erreur lors de la mise à jour du pré-admin ❌",
+      error: error.message,
+    });
   }
 };
+
 
 // 🗑️ Supprimer un PreAdmin
 export const deletePreAdmin = async (req, res) => {
