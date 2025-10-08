@@ -48,7 +48,8 @@ export const createPreAdmin = async (req, res) => {
     const photo = req.file ? req.file.filename : null;
 
     // Conversion de la date
-    const isoDate = moment(date_naissance, "DD/MM/YYYY").format("YYYY-MM-DD");
+    const isoDate = moment(date_naissance, ["YYYY-MM-DD","DD/MM/YYYY"]).format("YYYY-MM-DD");
+
 
     const preAdmin = await PreAdmin.create({
       username,
