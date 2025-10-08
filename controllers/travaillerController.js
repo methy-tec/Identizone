@@ -2,7 +2,7 @@ import moment from "moment";
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken';
 
-import { Travailleur } from "../models/index.js";
+import { Travailleur} from "../models/index.js";
 
 export const createTravailler = async (req, res) => {
    try {
@@ -61,30 +61,41 @@ export const getAllTravailleurs = async (req, res) => {
     let travailleurs;
 
     if (req.user.role === "superadmin") {
-      // Le superadmin voit tout
+      // 🧑‍💼 Le superadmin voit tout
       travailleurs = await Travailleur.findAll();
-    } else if (req.user.role === "admin") {
-      // L’admin voit seulement ses travailleurs
+    } 
+    else if (req.user.role === "admin") {
+      // 👨‍💼 L’admin voit seulement ses travailleurs
       travailleurs = await Travailleur.findAll({
         where: { adminId: req.user.id }
       });
-    } else if (req.user.role === "preadmin") {
-      // Le préadmin voit seulement les siens
+    } 
+    else if (req.user.role === "preadmin") {
+      // 👨‍🔧 Le pré-admin voit les travailleurs du même admin que lui
+      const preAdmin = await PreAdmin.findByPk(req.user.id);
+
+      if (!preAdmin) {
+        return res.status(404).json({ message: "Pré-admin introuvable ❌" });
+      }
+
       travailleurs = await Travailleur.findAll({
-        where: { preAdminId: req.user.id }
+        where: { adminId: preAdmin.adminId }
       });
-    } else {
+    } 
+    else {
       return res.status(403).json({ message: "⛔ Accès interdit" });
     }
 
     res.json(travailleurs);
   } catch (error) {
+    console.error("Erreur getAllTravailleurs:", error);
     res.status(500).json({
       message: "Erreur lors de la récupération des travailleurs ❌",
       error: error.message,
     });
   }
 };
+
 export const getTravailleurById = async (req, res) => {
   try {
     const travailleur = await Travailleur.findByPk(req.params.id);
