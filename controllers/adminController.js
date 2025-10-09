@@ -53,27 +53,54 @@ export const register = async (req, res) => {
     });
   }
 };
-export const login = async (req, res) =>{
-    try{
-        const {username, password} = req.body;
-        
-        const user = await Admin.findOne({ where: { username}});
-        if (!user) return res.status(400).json({message: 'Utilisateur introuvable'});
+export const login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+    // 1️⃣ Recherche de l'utilisateur
+    const user = await Admin.findOne({ where: { username } });
+    if (!user) return res.status(400).json({ message: "Utilisateur introuvable ❌" });
 
-        const valid = await bcrypt.compare(password, hashedPassword);
-        if (!valid) return res.status(400).json({ message: 'Mot de passse incorrect'});
+    // 2️⃣ Vérification du mot de passe (ne pas rehash !)
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(400).json({ message: "Mot de passe incorrect ❌" });
 
-        const token = jwt.sign({ id: user.id, role: user.role, habitatId: user.habitatId,}, process.env.JWT_SECRET, {expiresIn: '1h'});
-        const refreshToken = jwt.sign({ id: user.id, role: user.role}, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "2h"});
-        
-        res.json({token, refreshToken, user: {id: user.id, nom_complet: user.nom_complet, username: user.username, habitatId: user.habitatId, role: user.role}});
+    // 3️⃣ Création du token avec adminId et habitatId
+    const token = jwt.sign(
+      {
+        id: user.id,
+        role: user.role,
+        adminId: user.id,      // 🔥 ajouté pour ton createFamille
+        habitatId: user.habitatId, // 🔥 ajouté pour ton createFamille
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-    }catch (err){
-        res.status(500).json({ message: err.message})
-    }
-}
+    const refreshToken = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: "2h" }
+    );
+
+    // 4️⃣ Réponse
+    res.json({
+      message: "Connexion réussie ✅",
+      token,
+      refreshToken,
+      user: {
+        id: user.id,
+        nom_complet: user.nom_complet,
+        username: user.username,
+        habitatId: user.habitatId,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur interne lors de la connexion ❌", error: err.message });
+  }
+};
 export const getAllAdmins = async (req, res) => {
     try{
         const user = await Admin.findAll({
