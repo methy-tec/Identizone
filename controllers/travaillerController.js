@@ -108,21 +108,19 @@ export const updateStatut = async (req, res) => {
     const { id } = req.params;
     const { statut } = req.body;
 
-    if (statut !== true && statut !== false) {
-      return res.status(400).json({ message: "Statut invalide (true/false)" });
+    if (!["actif", "inactif"].includes(statut)) {
+      return res.status(400).json({ message: "Statut invalide (actif/inactif)" });
     }
 
     const travailleur = await Travailleur.findByPk(id);
-    if (!travailleur) {
-      return res.status(404).json({ message: "Travailleur non trouvé" });
-    }
+    if (!travailleur) return res.status(404).json({ message: "Travailleur introuvable" });
 
     travailleur.statut = statut;
     await travailleur.save();
 
-    res.json({ message: "✅ Statut mis à jour avec succès", travailleur });
-  } catch (error) {
-    res.status(500).json({ message: "Erreur mise à jour statut ❌", error: error.message });
+    res.json({ message: `Travailleur ${statut} avec succès ✅`, travailleur });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
