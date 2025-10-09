@@ -4,23 +4,37 @@ import {Famille, Utilisateur, Habitat} from "../models/index.js";
 export const createFamille = async (req, res) => {
   try {
     const { nom_complet } = req.body;
-    if (!nom_complet) return res.status(400).json({message: "Veuillez fournir le nom complet ❌"})
 
-    const familles = await Famille.create({
-      nom_complet,
+    // 🧩 Vérifier si le champ requis est présent
+    if (!nom_complet?.trim()) {
+      return res.status(400).json({ message: "Veuillez fournir le nom complet de la famille ❌" });
+    }
+
+    // 🧩 Vérifier que les infos d’authentification existent bien
+    if (!req.user || !req.user.adminId || !req.user.habitatId) {
+      return res.status(403).json({ message: "Accès refusé : informations administrateur manquantes ❌" });
+    }
+
+    // 🏠 Création de la famille
+    const famille = await Famille.create({
+      nom_complet: nom_complet.trim(),
       nombre_personne: 0,
       adminId: req.user.adminId,
       habitatId: req.user.habitatId,
+      pereStatut: "vivant",
+      mereStatut: "vivant",
     });
 
-    res.status(201).json({
-      message: "Famille créé avec succès ✅",
-      familles,
+    // ✅ Réponse réussie
+    return res.status(201).json({
+      message: "Famille créée avec succès ✅",
+      famille,
     });
+
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      message: "Erreur lors de la création du Famille ❌",
+    console.error("Erreur lors de la création de la famille :", error);
+    return res.status(500).json({
+      message: "Erreur lors de la création de la famille ❌",
       error: error.message,
     });
   }
