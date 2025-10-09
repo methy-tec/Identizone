@@ -56,46 +56,30 @@ export const login = async (req, res) =>{
         res.status(500).json({ message: err.message})
     }
 }
-export const getAllTravailleurs = async (req, res) => {
-  try {
-    let travailleurs;
-
-    if (req.user.role === "superadmin") {
-      // 🧑‍💼 Le superadmin voit tout
-      travailleurs = await Travailleur.findAll();
-    } 
-    else if (req.user.role === "admin") {
-      // 👨‍💼 L’admin voit seulement ses travailleurs
-      travailleurs = await Travailleur.findAll({
-        where: { adminId: req.user.id }
-      });
-    } 
-    else if (req.user.role === "preadmin") {
-      // 👨‍🔧 Le pré-admin voit les travailleurs du même admin que lui
-      const preAdmin = await PreAdmin.findByPk(req.user.id);
-
-      if (!preAdmin) {
-        return res.status(404).json({ message: "Pré-admin introuvable ❌" });
-      }
-
-      travailleurs = await Travailleur.findAll({
-        where: { adminId: preAdmin.adminId }
-      });
-    } 
-    else {
-      return res.status(403).json({ message: "⛔ Accès interdit" });
-    }
-
-    res.json(travailleurs);
-  } catch (error) {
-    console.error("Erreur getAllTravailleurs:", error);
-    res.status(500).json({
-      message: "Erreur lors de la récupération des travailleurs ❌",
-      error: error.message,
-    });
-  }
+export const getAllTravailleurs = async (req, res) => { 
+   try {
+      let travailleurs;
+      if (req.user.role === "superadmin") {
+         // Le superadmin voit tout 
+         travailleurs = await Travailleur.findAll(); 
+      } else if (req.user.role === "admin") {
+         // L’admin voit seulement ses travailleurs 
+         travailleurs = await Travailleur.findAll({ 
+            where: { adminId: req.user.id } 
+         }); 
+      } else if (req.user.role === "preadmin") { 
+         // Le préadmin voit seulement les siens 
+         travailleurs = await Travailleur.findAll({ 
+            where: { preAdminId: req.user.id } 
+         }); 
+      } else { 
+         return res.status(403).json({ message: "⛔ Accès interdit" }); 
+      } 
+      res.json(travailleurs); 
+   } catch (error) {
+      res.status(500).json({ message: "Erreur lors de la récupération des travailleurs ❌", error: error.message, }); 
+   } 
 };
-
 export const getTravailleurById = async (req, res) => {
   try {
     const travailleur = await Travailleur.findByPk(req.params.id);
