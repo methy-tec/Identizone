@@ -103,7 +103,7 @@ export const getTravailleurById = async (req, res) => {
     });
   }
 };
-export const updateStatutTravailleur = async (req, res) => {
+export const updateStatut = async (req, res) => {
   try {
     const { id } = req.params;
     const { statut } = req.body;
