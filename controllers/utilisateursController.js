@@ -1,59 +1,91 @@
 import { Utilisateur,Admin, PreAdmin, Habitat, Famille } from "../models/index.js";
 import moment from "moment";
 
-export const registerUtilisateur = async (req, res) =>{
-    try{
-        const {nom, postnom, prenom, lieu_naissance, date_naissance, sexe, niveau_etude, numero_tel, adresse, nationalite, etat_civil, profession, familleId} = req.body;
+import moment from "moment";
+import { Famille, Utilisateur } from "../models/index.js";
 
-        //Verifie si la famille existe
-        const famille = await Famille.findByPk(familleId, {include: [{model:Utilisateur, as: "membres"}]});
-        if (!famille) {
-            return res.status(404).json({message: "❌ Famille Introuvable"});
-        }
+export const registerUtilisateur = async (req, res) => {
+  try {
+    const {
+      nom,
+      postnom,
+      prenom,
+      lieu_naissance,
+      date_naissance,
+      sexe,
+      niveau_etude,
+      numero_tel,
+      adresse,
+      nationalite,
+      etat_civil,
+      profession,
+      familleId,
+    } = req.body;
 
-
-        const isoDate = moment(date_naissance, "DD/MM/YYYY").format("YYYY-MM-DD");
-        const photo = req.file ? req.file.filename : null;
-
-        // Avant la création dans registerUtilisateur
-        const doublon = await Utilisateur.findOne({
-            where: { nom, postnom, prenom, date_naissance: isoDate, familleId }
-        });
-
-        if (doublon) {
-            return res.status(400).json({ message: "❌ Cet utilisateur existe déjà dans cette famille" });
-        }
-
-        const utilisateur = await Utilisateur.create({
-            nom,
-            postnom, 
-            prenom,
-            lieu_naissance,
-            date_naissance:isoDate,
-            sexe,
-            nationalite,
-            niveau_etude,
-            etat_civil,
-            numero_tel,
-            adresse,
-            photo,
-            familleId,
-            profession,
-            adminId: req.user.adminId,
-            habitatId: req.user.habitatId
-        });
-
-        //🔥 Mise a jour de la famille avec pere/mere
-        if(sexe === "M" && !famille.pereId){
-            await famille.update({pereId: utilisateur.id});
-        }else if(sexe === "F" && !famille.mereId){
-            await famille.update({ mereId: utilisateur.id});
-        }
-        res.status(201).json({ message: "✅ Utilisateur crée avec success", utilisateur});
-    }catch (error){
-        res.status(500).json({ message: "❌ Erreur lors de la creation de l'utilisateur", error: error.message});
+    // 1️⃣ Vérifier si la famille existe
+    const famille = await Famille.findByPk(familleId, {
+      include: [{ model: Utilisateur, as: "membres" }],
+    });
+    if (!famille) {
+      return res.status(404).json({ message: "❌ Famille introuvable" });
     }
+
+    // 2️⃣ Formater la date au format ISO pour Sequelize
+    const isoDate = moment(date_naissance, "DD/MM/YYYY").format("YYYY-MM-DD");
+    const photo = req.file ? req.file.filename : null;
+
+    // 3️⃣ Empêcher la création d’un doublon
+    const doublon = await Utilisateur.findOne({
+      where: { nom, postnom, prenom, date_naissance: isoDate, familleId },
+    });
+
+    if (doublon) {
+      return res
+        .status(400)
+        .json({ message: "❌ Cet utilisateur existe déjà dans cette famille" });
+    }
+
+    // 4️⃣ Créer l’utilisateur
+    const utilisateur = await Utilisateur.create({
+      nom,
+      postnom,
+      prenom,
+      lieu_naissance,
+      date_naissance: isoDate,
+      sexe,
+      nationalite,
+      niveau_etude,
+      etat_civil,
+      numero_tel,
+      adresse,
+      photo,
+      familleId,
+      profession,
+      adminId: req.user?.adminId || null,
+      habitatId: req.user?.habitatId || null,
+    });
+
+    // 5️⃣ Mise à jour automatique de la famille
+    if (sexe === "M" && !famille.pereId) {
+      await famille.update({ pereId: utilisateur.id });
+    } else if (sexe === "F" && !famille.mereId) {
+      await famille.update({ mereId: utilisateur.id });
+    }
+
+    // 6️⃣ Réponse finale
+    res.status(201).json({
+      message: "✅ Utilisateur créé avec succès",
+      utilisateur,
+    });
+  } catch (error) {
+    console.error("Erreur registerUtilisateur:", error);
+    res.status(500).json({
+      message: "❌ Erreur lors de la création de l'utilisateur",
+      error: error.message,
+    });
+  }
 };
+
 // ➡️ Marquer un utilisateur comme décédé
 export const declarerDeces = async (req, res) => {
   try {
