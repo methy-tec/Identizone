@@ -1,9 +1,6 @@
 import { Utilisateur,Admin, PreAdmin, Habitat, Famille } from "../models/index.js";
 import moment from "moment";
 
-import moment from "moment";
-import { Famille, Utilisateur } from "../models/index.js";
-
 export const registerUtilisateur = async (req, res) => {
   try {
     const {
