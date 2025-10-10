@@ -28,7 +28,7 @@ export const registerUtilisateur = async (req, res) => {
     }
 
     // 2️⃣ Formater la date au format ISO pour Sequelize
-    const isoDate = moment(date_naissance, "DD/MM/YYYY").format("YYYY-MM-DD");
+    const isoDate = moment(date_naissance, "YYYY-MM-DD").format("YYYY-MM-DD");
     const photo = req.file ? req.file.filename : null;
 
     // 3️⃣ Empêcher la création d’un doublon
