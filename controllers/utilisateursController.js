@@ -19,6 +19,9 @@ export const registerUtilisateur = async (req, res) => {
       familleId,
     } = req.body;
 
+    console.log("Data reçue:", req.body);
+
+
     // 1️⃣ Vérifier si la famille existe
     const famille = await Famille.findByPk(familleId, {
       include: [{ model: Utilisateur, as: "membres" }],
