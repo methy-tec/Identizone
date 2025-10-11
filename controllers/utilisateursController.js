@@ -124,8 +124,8 @@ export const updateUtilisateur = async (req, res) => {
     } = req.body;
 
     const isoDate = date_naissance
-      ? moment(date_naissance, "DD/MM/YYYY").format("YYYY-MM-DD")
-      : utilisateur.date_naissance;
+  ? moment(date_naissance, ["DD/MM/YYYY", "YYYY-MM-DD"]).format("YYYY-MM-DD")
+  : utilisateur.date_naissance;
 
     const photo = req.file ? req.file.filename : utilisateur.photo;
 
