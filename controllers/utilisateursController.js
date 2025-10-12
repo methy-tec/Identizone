@@ -115,57 +115,67 @@ export const declarerDeces = async (req, res) => {
 
 export const updateUtilisateur = async (req, res) => {
   try {
-    console.log("🧩 Requête de mise à jour reçue :", req.params.id);
-    console.log("🧩 Données reçues :", req.body);
-    console.log("🧩 Fichier reçu :", req.file ? req.file.filename : "Aucun fichier");
+    console.log("🧩 [UPDATE] Requête reçue :", req.params.id);
+    console.log("🧩 Body :", req.body);
+    console.log("🧩 Fichier :", req.file ? req.file.filename : "Aucun");
 
     const utilisateur = await Utilisateur.findByPk(req.params.id);
     if (!utilisateur) {
       return res.status(404).json({ message: "❌ Utilisateur introuvable" });
     }
 
-    // Récupérer les champs
+    // Champs du corps
     const {
-      nom, postnom, prenom, lieu_naissance,
-      date_naissance, sexe, niveau_etude, numero_tel,
-      adresse, nationalite, etat_civil, profession
+      nom,
+      postnom,
+      prenom,
+      lieu_naissance,
+      date_naissance,
+      sexe,
+      niveau_etude,
+      numero_tel,
+      adresse,
+      nationalite,
+      etat_civil,
+      profession,
     } = req.body;
 
-    // Conversion de la date
+    // Gestion date
     let isoDate = utilisateur.date_naissance;
-    if (date_naissance) {
+    if (date_naissance && date_naissance.trim() !== "") {
       const parsed = moment(date_naissance, ["DD/MM/YYYY", "YYYY-MM-DD"], true);
-      isoDate = parsed.isValid() ? parsed.format("YYYY-MM-DD") : utilisateur.date_naissance;
+      isoDate = parsed.isValid()
+        ? parsed.format("YYYY-MM-DD")
+        : utilisateur.date_naissance;
     }
 
-    // Gestion de la photo
+    // Gestion photo
     const photo = req.file ? req.file.filename : utilisateur.photo;
 
-    // Mise à jour des données
+    // Mise à jour
     await utilisateur.update({
-      nom: nom ?? utilisateur.nom,
-      postnom: postnom ?? utilisateur.postnom,
-      prenom: prenom ?? utilisateur.prenom,
-      lieu_naissance: lieu_naissance ?? utilisateur.lieu_naissance,
+      nom: nom || utilisateur.nom,
+      postnom: postnom || utilisateur.postnom,
+      prenom: prenom || utilisateur.prenom,
+      lieu_naissance: lieu_naissance || utilisateur.lieu_naissance,
       date_naissance: isoDate,
-      sexe: sexe ?? utilisateur.sexe,
-      nationalite: nationalite ?? utilisateur.nationalite,
-      niveau_etude: niveau_etude ?? utilisateur.niveau_etude,
-      etat_civil: etat_civil ?? utilisateur.etat_civil,
-      numero_tel: numero_tel ?? utilisateur.numero_tel,
-      adresse: adresse ?? utilisateur.adresse,
-      profession: profession ?? utilisateur.profession,
+      sexe: sexe || utilisateur.sexe,
+      niveau_etude: niveau_etude || utilisateur.niveau_etude,
+      numero_tel: numero_tel || utilisateur.numero_tel,
+      adresse: adresse || utilisateur.adresse,
+      nationalite: nationalite || utilisateur.nationalite,
+      etat_civil: etat_civil || utilisateur.etat_civil,
+      profession: profession || utilisateur.profession,
       photo,
     });
 
-    console.log("✅ Utilisateur mis à jour :", utilisateur.id);
-
-    return res.json({
+    console.log("✅ Utilisateur mis à jour avec succès :", utilisateur.id);
+    return res.status(200).json({
       message: "✅ Utilisateur modifié avec succès",
       utilisateur,
     });
   } catch (error) {
-    console.error("❌ Erreur backend updateUtilisateur :", error);
+    console.error("❌ Erreur updateUtilisateur :", error.stack);
     return res.status(500).json({
       message: "❌ Erreur lors de la modification",
       error: error.message,
