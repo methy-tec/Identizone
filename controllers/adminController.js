@@ -4,6 +4,57 @@ import jwt from 'jsonwebtoken';
 import moment from "moment";
 import { where } from "sequelize";
 
+//Recuperer l'admin connecter
+export const meConnect = async (req, res) => {
+  try{
+    const admin = await Admin.findByPk(req.user.id);
+    res.json(admin);
+  }catch(err) {
+    res.status(500).json({ message: "Erreur récuperation profil", error: err.message});
+  }
+};
+
+//Mettre a jour profil
+export const updateProfil = async(req, res) => {
+   try {
+    const admin = await Admin.findByPk(req.user.id);
+    if (!admin) return res.status(404).json({ message: "Admin introuvable" });
+
+    const { username, nom_complet, numero_tel, adresse } = req.body;
+
+    admin.username = username || admin.username;
+    admin.nom_complet = nom_complet || admin.nom_complet;
+    admin.numero_tel = numero_tel || admin.numero_tel;
+    admin.adresse = adresse || admin.adresse;
+
+    if (req.file) admin.photo = req.file.filename;
+
+    await admin.save();
+    res.json({ message: "Profil mis à jour ✅", admin });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur mise à jour profil", error: err.message });
+  }
+};
+
+//Change mot de passe
+export const changePass = async(req, res) => {
+  try {
+    const { ancien, nouveau } = req.body;
+    const admin = await Admin.findByPk(req.user.id);
+
+    const valid = await bcrypt.compare(ancien, admin.password);
+    if (!valid) return res.status(400).json({ message: "Mot de passe actuel incorrect" });
+
+    admin.password = await bcrypt.hash(nouveau, 10);
+    await admin.save();
+
+    res.json({ message: "Mot de passe mis à jour ✅" });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur changement mot de passe", error: err.message });
+  }
+}
+
+
 export const register = async (req, res) => {
   try {
     const { username, nom_complet, lieu_naissance, date_naissance, numero_tel, adresse, camp, password } = req.body;
