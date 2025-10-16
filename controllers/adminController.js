@@ -241,7 +241,6 @@ export const getStatistics = async (req, res) => {
       utilisateurs = await Utilisateur.count({
         include: [
           {
-            model: Famille,
             where: { adminId: userId },
           },
         ],
@@ -261,7 +260,6 @@ export const getStatistics = async (req, res) => {
       utilisateurs = await Utilisateur.count({
         include: [
           {
-            model: Famille,
             where: { adminId },
           },
         ],
