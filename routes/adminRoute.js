@@ -10,7 +10,7 @@ const router = express.Router();
 router.get("/statistics", verifyToken, verifyRole("admin", "preadmin"), getStatistics);
 
 // CRUD routes
-router.post("/", verifyToken, verifyRole("superadmin"), upload.single("photo"), register);
+router.post("/", verifyToken, verifyRole("superadmin"), upload.single("photo"), register); 
 router.post("/login", login);
 router.get("/list", verifyToken, verifyRole("superadmin"), getAllAdmins);
 router.get("/me", verifyToken, meConnect);
