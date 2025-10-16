@@ -1,5 +1,5 @@
 import express from "express";
-import { register, login, getAllAdmins, updateAdmin, getAdminById, refreshToken } from "../controllers/adminController.js";
+import { register, login, getAllAdmins, updateAdmin, getAdminById, refreshToken, getStatistics } from "../controllers/adminController.js";
 import upload from "../middlewares/multerMiddlewares.js";
 import { verifyRole, verifyToken } from "../middlewares/authMiddlewares.js";
 
@@ -12,6 +12,9 @@ router.get("/list", verifyToken, verifyRole("superadmin"), getAllAdmins);
 router.put("/:id", upload.single("photo"), updateAdmin);
 router.get("/:id", getAdminById);
 router.post("/refresh", refreshToken);
+
+// Statistiques
+router.get("/statistics", verifyToken, verifyRole("superadmin"), getStatistics);
 
 
 export default router;
