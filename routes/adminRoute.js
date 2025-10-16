@@ -5,6 +5,10 @@ import { verifyRole, verifyToken } from "../middlewares/authMiddlewares.js";
 
 const router = express.Router();
 
+
+// Statistiques
+router.get("/statistics", verifyToken, verifyRole("admin", "preadmin"), getStatistics);
+
 // CRUD routes
 router.post("/", verifyToken, verifyRole("superadmin"), upload.single("photo"), register);
 router.post("/login", login);
@@ -13,8 +17,6 @@ router.put("/:id", upload.single("photo"), updateAdmin);
 router.get("/:id", getAdminById);
 router.post("/refresh", refreshToken);
 
-// Statistiques
-router.get("/statistics", verifyToken, verifyRole("admin", "preadmin"), getStatistics);
 
 
 export default router;
