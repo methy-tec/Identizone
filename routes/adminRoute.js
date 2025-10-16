@@ -1,5 +1,5 @@
 import express from "express";
-import { register, login, getAllAdmins, updateAdmin, getAdminById, refreshToken, getStatistics, meConnect } from "../controllers/adminController.js";
+import { register, login, getAllAdmins, updateAdmin, getAdminById, refreshToken, getStatistics, meConnect, changePass, updateProfil } from "../controllers/adminController.js";
 import upload from "../middlewares/multerMiddlewares.js";
 import { verifyRole, verifyToken } from "../middlewares/authMiddlewares.js";
 
@@ -15,6 +15,8 @@ router.post("/login", login);
 router.get("/list", verifyToken, verifyRole("superadmin"), getAllAdmins);
 router.get("/me", verifyToken, meConnect);
 router.put("/:id", upload.single("photo"), updateAdmin);
+router.put("/me", verifyToken, upload.single("photo"), updateProfil);
+router.put("/me/password", verifyToken, changePass)
 router.get("/:id", getAdminById);
 router.post("/refresh", refreshToken);
 
