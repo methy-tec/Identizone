@@ -7,7 +7,7 @@ import { where } from "sequelize";
 //Recuperer l'admin connecter
 export const meConnect = async (req, res) => {
   try{
-    const admin = await Admin.findByPk(req.user.id);
+    const admin = await Admin.findByPk(req.user.id); 
     res.json(admin);
   }catch(err) {
     res.status(500).json({ message: "Erreur récuperation profil", error: err.message});
