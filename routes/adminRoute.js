@@ -14,7 +14,7 @@ router.get("/:id", getAdminById);
 router.post("/refresh", refreshToken);
 
 // Statistiques
-router.get("/statistics", verifyToken, verifyRole("superadmin"), getStatistics);
+router.get("/statistics", verifyToken, verifyRole("admin", "preadmin"), getStatistics);
 
 
 export default router;
