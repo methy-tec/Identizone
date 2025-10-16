@@ -15,8 +15,8 @@ export const meConnect = async (req, res) => {
 };
 
 //Mettre a jour profil
-export const updateProfil = async(req, res) => {
-   try {
+export const updateProfil = async (req, res) => {
+  try {
     const admin = await Admin.findByPk(req.user.id);
     if (!admin) return res.status(404).json({ message: "Admin introuvable" });
 
@@ -27,12 +27,14 @@ export const updateProfil = async(req, res) => {
     admin.numero_tel = numero_tel || admin.numero_tel;
     admin.adresse = adresse || admin.adresse;
 
+    // Vérifier si un fichier a été envoyé
     if (req.file) admin.photo = req.file.filename;
 
     await admin.save();
     res.json({ message: "Profil mis à jour ✅", admin });
   } catch (err) {
-    res.status(500).json({ message: "Erreur mise à jour profil", error: err.message });
+    console.error("Erreur updateProfil:", err);
+    res.status(500).json({ message: "Erreur mise à jour profil ❌", error: err.message });
   }
 };
 
