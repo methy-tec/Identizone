@@ -1,4 +1,4 @@
-import { Admin, PreAdmin,Utilisateur, Famille, Travailler, Habitat } from "../models/index.js";
+import { Admin, PreAdmin,Utilisateur, Famille,  Travailleur, Habitat } from "../models/index.js";
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken';
 import moment from "moment";
@@ -229,7 +229,7 @@ export const getStatistics = async (req, res) => {
     const preadmins = await PreAdmin.count();
     const familles = await Famille.count();
     const utilisateurs = await Utilisateur.count();
-    const travailleurs = await Travailler.count();
+    const travailleurs = await  Travailleur.count();
 
     res.json({ preadmins, familles, utilisateurs, travailleurs });
   } catch (error) {
