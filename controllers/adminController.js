@@ -224,16 +224,55 @@ export const refreshToken = (req, res) => {
 };
 
 // Statistiques
+// Statistiques dynamiques selon le rôle de l'utilisateur connecté
 export const getStatistics = async (req, res) => {
   try {
-    const preadmins = await PreAdmin.count();
-    const familles = await Famille.count();
-    const utilisateurs = await Utilisateur.count();
-    const travailleurs = await  Travailleur.count();
+    const userId = req.user.id;   // ID du compte connecté
+    const role = req.user.role;   // Rôle : superadmin, admin ou preadmin
+
+    let preadmins = 0;
+    let familles = 0;
+    let utilisateurs = 0;
+    let travailleurs = 0;
+
+    if (role === "admin") {
+      // 🟩 L’admin voit uniquement ses propres données
+      familles = await Famille.count({ where: { adminId: userId } });
+      utilisateurs = await Utilisateur.count({
+        include: [
+          {
+            model: Famille,
+            where: { adminId: userId },
+          },
+        ],
+      });
+      travailleurs = await Travailleur.count({ where: { adminId: userId } });
+
+    } else if (role === "preadmin") {
+      // 🟨 Le pré-admin voit les données liées à son admin principal
+      const preadmin = await PreAdmin.findByPk(userId);
+      if (!preadmin || !preadmin.adminId) {
+        return res.status(404).json({ message: "Aucun admin principal trouvé pour ce pré-admin ❌" });
+      }
+
+      const adminId = preadmin.adminId;
+
+      familles = await Famille.count({ where: { adminId } });
+      utilisateurs = await Utilisateur.count({
+        include: [
+          {
+            model: Famille,
+            where: { adminId },
+          },
+        ],
+      });
+      travailleurs = await Travailleur.count({ where: { adminId } });
+    }
 
     res.json({ preadmins, familles, utilisateurs, travailleurs });
   } catch (error) {
     console.error("Erreur statistiques:", error);
-    res.status(500).json({ message: "Erreur récupération statistiques ❌" });
+    res.status(500).json({ message: "Erreur récupération statistiques ❌", error: error.message });
   }
 };
+
