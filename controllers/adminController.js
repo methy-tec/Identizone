@@ -238,7 +238,7 @@ export const getStatistics = async (req, res) => {
     if (role === "admin") {
       // 🟩 L’admin voit uniquement ses propres données
       familles = await Famille.count({ where: { adminId: userId } });
-      utilisateurs = await Utilisateur.count({ where: {adminId: userId});
+      utilisateurs = await Utilisateur.count({ where: {adminId:userId} });
       travailleurs = await Travailleur.count({ where: { adminId: userId } });
 
     } else if (role === "preadmin") {
