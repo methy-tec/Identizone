@@ -57,7 +57,7 @@ app.get("/", (req, res) => {
 
 // Connexion DB + lancement serveur
 sequelize
-  .sync({ force: true })
+  .sync({ force: false })
   .then(() => {
     console.log("📦 Base de données synchronisée");
     app.listen(process.env.PORT, () =>
