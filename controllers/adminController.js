@@ -226,37 +226,25 @@ export const refreshToken = (req, res) => {
 // Statistiques dynamiques selon le rôle de l'utilisateur connecté
 export const getStatistics = async (req, res) => {
   try {
-    const userId = req.user.id;   // ID du compte connecté
-    const role = req.user.role;   // Rôle : superadmin, admin ou preadmin
 
-    let preadmins = 0;
-    let familles = 0;
-    let utilisateurs = 0;
-    let travailleurs = 0;
+    const userId = req.user.id;
+    
+    const preadmins = await PreAdmin.count({
+      where: {adminId: userId}
+    });
+    const familles = await Famille.count({
+      where: {adminId: userId}
+    });
+    const utilisateurs = await Utilisateur.count({
+      where: {adminId: userId}
+    });
+    const travailleurs = await Travailleur.count({
+      where: {adminId: userId}
+    });
 
-    if (role === "admin") {
-      // 🟩 L’admin voit uniquement ses propres données
-      familles = await Famille.count({ where: { adminId: userId } });
-      utilisateurs = await Utilisateur.count({ where: { adminId: userId } });
-      travailleurs = await Travailleur.count({ where: { adminId: userId } });
-
-    } else if (role === "preadmin") {
-      // 🟨 Le pré-admin voit les données liées à son admin principal
-      const preadmin = await PreAdmin.findByPk(userId);
-      if (!preadmin || !preadmin.adminId) {
-        return res.status(404).json({ message: "Aucun admin principal trouvé pour ce pré-admin ❌" });
-      }
-
-      const adminId = preadmin.adminId;
-
-      familles = await Famille.count({ where: { adminId } });
-      utilisateurs = await Utilisateur.count({ where: { adminId } });
-      travailleurs = await Travailleur.count({ where: { adminId } });
-    }
-
-    res.json({ preadmins, familles, utilisateurs, travailleurs });
+    res.json({preadmins, familles, utilisateurs, travailleurs, });
   } catch (error) {
     console.error("Erreur statistiques:", error);
-    res.status(500).json({ message: "Erreur récupération statistiques ❌", error: error.message });
+    res.status(500).json({ message: "Erreur récupération statistiques ❌" });
   }
 };
