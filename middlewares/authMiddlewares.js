@@ -9,6 +9,9 @@ export const verifyToken = (req, res, next) => {
     return res.status(401).json({ message: "⛔ Token manquant" });
   }
 
+  console.log("Token décodé:", req.user);
+
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded; // on stocke { id, role } dans req
