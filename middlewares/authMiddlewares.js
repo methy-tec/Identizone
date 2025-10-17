@@ -3,13 +3,15 @@ import jwt from "jsonwebtoken";
 
 export const verifyToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
+  console.log("Authorization header:", authHeader); 
+  
   const token = authHeader?.split(" ")[1]; // format attendu: Bearer <token>
-
+  console.log("Token décodé:", req.user);
+  
   if (!token) {
     return res.status(401).json({ message: "⛔ Token manquant" });
   }
 
-  console.log("Token décodé:", req.user);
 
 
   try {
