@@ -1,4 +1,4 @@
-import { PreAdmin, Admin, Habitat } from "../models/index.js";
+import { PreAdmin, Admin, Habitat, Famille, Travailleur, Utilisateur } from "../models/index.js";
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken';
 
@@ -231,5 +231,28 @@ export const refreshToken = (req, res) => {
     res.json({ accessToken: newAccessToken });
   } catch (err) {
     res.status(403).json({ message: "Refresh token invalide ❌", error: err.message });
+  }
+};
+
+export const getStatistics = async (req, res) => {
+  try {
+
+    const userId = req.user.id;
+    const userAdminId = req.user.adminId
+    
+    const familles = await Famille.count({
+      where: {adminId: userAdminId}
+    });
+    const utilisateurs = await Utilisateur.count({
+      where: {adminId: userAdminId}
+    });
+    const travailleurs = await Travailleur.count({
+      where: {preAdminId: userId}
+    });
+
+    res.json({ familles, utilisateurs, travailleurs, });
+  } catch (error) {
+    console.error("Erreur statistiques:", error);
+    res.status(500).json({ message: "Erreur récupération statistiques ❌" });
   }
 };
