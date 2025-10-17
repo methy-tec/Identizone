@@ -245,9 +245,8 @@ export const getStatistics = async (req, res) => {
 
     const familles = await Famille.count({ where: { habitatId } });
     const utilisateurs = await Utilisateur.count({ where: { habitatId } });
-    const travailleurs = await Travailleur.count({ where: { preAdminId: userId } });
 
-    res.json({ familles, utilisateurs, travailleurs });
+    res.json({ familles, utilisateurs});
   } catch (error) {
     console.error("Erreur statistiques:", error);
     res.status(500).json({ message: "Erreur récupération statistiques ❌", error: error.message });
