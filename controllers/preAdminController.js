@@ -237,11 +237,7 @@ export const refreshToken = (req, res) => {
 
 export const getStatistics = async (req, res) => {
   try {
-    const { role, id: userId, habitatId } = req.user;
-
-    if (role !== "preadmin") {
-      return res.status(403).json({ message: "Accès refusé : réservé au pré-admin ❌" });
-    }
+    const { habitatId } = req.user;
 
     const familles = await Famille.count({ where: { habitatId } });
     const utilisateurs = await Utilisateur.count({ where: { habitatId } });
