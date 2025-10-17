@@ -237,21 +237,15 @@ export const refreshToken = (req, res) => {
 
 export const getStatistics = async (req, res) => {
   try {
-    const role = req.user.role;
-    const userId = req.user.id;
-    const habitatId = req.user.habitatId;
+    const { role, id: userId, habitatId } = req.user;
 
-    let familles = 0;
-    let utilisateurs = 0;
-    let travailleurs = 0;
-
-    if (role === "preadmin") {
-      // 🔹 Pré-admin : statistiques dans son habitat
-      familles = await Famille.count({ where: { habitatId } });
-      utilisateurs = await Utilisateur.count({ where: { habitatId } });
-      travailleurs = await Travailleur.count({ where: { preAdminId: userId } });
-
+    if (role !== "preadmin") {
+      return res.status(403).json({ message: "Accès refusé : réservé au pré-admin ❌" });
     }
+
+    const familles = await Famille.count({ where: { habitatId } });
+    const utilisateurs = await Utilisateur.count({ where: { habitatId } });
+    const travailleurs = await Travailleur.count({ where: { preAdminId: userId } });
 
     res.json({ familles, utilisateurs, travailleurs });
   } catch (error) {
