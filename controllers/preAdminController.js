@@ -13,7 +13,8 @@ export const login = async (req, res) =>{
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const valid = await bcrypt.compare(password, hashedPassword);
+        const valid = await bcrypt.compare(password, user.password);
+
         if (!valid) return res.status(400).json({ message: 'Mot de passse incorrect'});
 
         const token = jwt.sign({ id: user.id, role: user.role, adminId: user.adminId, habitatId: user.habitatId}, process.env.JWT_SECRET, {expiresIn: '1h'});
@@ -236,23 +237,25 @@ export const refreshToken = (req, res) => {
 
 export const getStatistics = async (req, res) => {
   try {
-
+    const role = req.user.role;
     const userId = req.user.id;
-    const userAdminId = req.user.adminId
-    
-    const familles = await Famille.count({
-      where: {adminId: userAdminId}
-    });
-    const utilisateurs = await Utilisateur.count({
-      where: {adminId: userAdminId}
-    });
-    const travailleurs = await Travailleur.count({
-      where: {preAdminId: userId}
-    });
+    const habitatId = req.user.habitatId;
 
-    res.json({ familles, utilisateurs, travailleurs, });
+    let familles = 0;
+    let utilisateurs = 0;
+    let travailleurs = 0;
+
+    if (role === "preadmin") {
+      // 🔹 Pré-admin : statistiques dans son habitat
+      familles = await Famille.count({ where: { habitatId } });
+      utilisateurs = await Utilisateur.count({ where: { habitatId } });
+      travailleurs = await Travailleur.count({ where: { preAdminId: userId } });
+
+    }
+
+    res.json({ familles, utilisateurs, travailleurs });
   } catch (error) {
     console.error("Erreur statistiques:", error);
-    res.status(500).json({ message: "Erreur récupération statistiques ❌" });
+    res.status(500).json({ message: "Erreur récupération statistiques ❌", error: error.message });
   }
 };
