@@ -6,6 +6,7 @@ import {
   getPreAdminById,
   updatePreAdmin,
   deletePreAdmin,
+  getStatistics,
   login
 } from "../controllers/preAdminController.js";
 import { verifyToken , verifyRole} from "../middlewares/authMiddlewares.js";
@@ -17,6 +18,7 @@ router.post("/login", login);
 
 router.get("/list",verifyToken, verifyRole("superadmin", "admin"), getAllPreAdmins);
 router.get("/:id", verifyToken, verifyRole("superadmin","admin"), getPreAdminById);
+router.get("/statistic", verifyToken, verifyRole("preadmin"), getStatistics);
 router.put("/:id", verifyToken, upload.single("photo"), updatePreAdmin);
 router.delete("/:id", verifyToken, verifyRole("superadmin", "admin"), deletePreAdmin);
 
