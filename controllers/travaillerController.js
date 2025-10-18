@@ -7,6 +7,8 @@ import { Travailleur} from "../models/index.js";
 export const createTravailler = async (req, res) => {
    try {
     const {username, nom_complet, lieu_naissance, date_naissance, numero_tel, adresse, password,} = req.body;
+      console.log("BODY:", req.body);
+
         const photo = req.file ? req.file.filename : null;
         const isoDate = moment(date_naissance, "DD/MM/YYYY").format("YYYY-MM-DD");
 
