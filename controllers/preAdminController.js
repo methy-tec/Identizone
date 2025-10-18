@@ -4,6 +4,58 @@ import jwt from 'jsonwebtoken';
 
 import moment from "moment";
 
+//Recuperer l'admin connecter
+export const meConnect = async (req, res) => {
+  try{
+    const preadmin = await PreAdmin.findByPk(req.user.id); 
+    res.json(preadmin);
+  }catch(err) {
+    res.status(500).json({ message: "Erreur récuperation profil", error: err.message});
+  }
+};
+
+//Mettre a jour profil
+export const updateProfil = async (req, res) => {
+  try {
+    const preadmin = await PreAdmin.findByPk(req.user.id);
+    if (!preadmin) return res.status(404).json({ message: "Admin introuvable" });
+
+    const { username, nom_complet, numero_tel, adresse } = req.body;
+
+    preadmin.username = username || preadmin.username;
+    preadmin.nom_complet = nom_complet || preadmin.nom_complet;
+    preadmin.numero_tel = numero_tel || preadmin.numero_tel;
+    preadmin.adresse = adresse || preadmin.adresse;
+
+    // Vérifier si un fichier a été envoyé
+    if (req.file) preadmin.photo = req.file.filename;
+
+    await preadmin.save();
+    res.json({ message: "Profil mis à jour ✅", admin });
+  } catch (err) {
+    console.error("Erreur updateProfil:", err);
+    res.status(500).json({ message: "Erreur mise à jour profil ❌", error: err.message });
+  }
+};
+
+//Change mot de passe
+export const changePass = async(req, res) => {
+  try {
+    const { ancien, nouveau } = req.body;
+    const preadmin = await PreAdmin.findByPk(req.user.id);
+
+    const valid = await bcrypt.compare(ancien, preadmin.password);
+    if (!valid) return res.status(400).json({ message: "Mot de passe actuel incorrect" });
+
+    preadmin.password = await bcrypt.hash(nouveau, 10);
+    await preadmin.save();
+
+    res.json({ message: "Mot de passe mis à jour ✅" });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur changement mot de passe", error: err.message });
+  }
+}
+
 export const login = async (req, res) =>{
     try{
         const {username, password} = req.body;
