@@ -10,7 +10,18 @@ export const createTravailler = async (req, res) => {
       console.log("BODY:", req.body);
 
         const photo = req.file ? req.file.filename : null;
-        const isoDate = moment(date_naissance, "DD/MM/YYYY").format("YYYY-MM-DD");
+        // 🧠 1️⃣ Vérification et formatage de la date
+       let isoDate = null;
+       if (date_naissance) {
+         const formats = ["YYYY-MM-DD", "DD/MM/YYYY", "MM-DD-YYYY"];
+         const parsedDate = moment(date_naissance, formats, true);
+         if (parsedDate.isValid()) {
+           isoDate = parsedDate.format("YYYY-MM-DD");
+         } else {
+        console.warn("⚠️ Date invalide reçue :", date_naissance);
+        return res.status(400).json({ message: "Format de date invalide. Utilise YYYY-MM-DD ou DD/MM/YYYY." });
+         }
+       }
 
         const hashedPassword = await bcrypt.hash(password, 10);
         
